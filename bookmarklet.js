@@ -4,7 +4,7 @@
     //Properties
     containerID: 'tmbritton-embookmarklet',
     displayID: 'emdisplay',
-    cssUrl: 'bookmarklet.css',
+    cssUrl: '//tmbritton.github.io/window-width/',
     emid: 'ems',
     pxid: 'pixels',
     yardstickID: 'tmbritton-embookmarkletyardstick',
