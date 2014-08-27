@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8 />
+  <title>Bookmarklet</title>
+</head>
+<body>
+  <a href="javascript: (function () {
+    var jsCode = document.createElement('script');
+    jsCode.setAttribute('src', 'bookmarklet.js');
+  document.body.appendChild(jsCode);
+}());">Bookmarklet - Development</a>	
+</body>
+</html>
