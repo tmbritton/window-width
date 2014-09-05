@@ -8,17 +8,15 @@
     emid: 'ems',
     pxid: 'pixels',
     yardstickID: 'tmbritton-embookmarkletyardstick',
+    closeIconId: 'tmbritton-embookmarklet-close',
+    stylesheetId: 'tmbritton-embookmarklet-css',
+    faStylesheetId: 'tmbritton-embookmarklet-fa-css',
 
     //Methods
-    addListeners: function() {
-      if(window.attachEvent) {
-        window.attachEvent('onresize', function() {
-          emBookmarklet.updateMeasurements();
-        });
-      }
-      else if(window.addEventListener) {
-        window.addEventListener('resize', function() {
-          emBookmarklet.updateMeasurements();
+    addListeners: function(element, listener, callback) {
+      if(element.addEventListener) {
+        element.addEventListener(listener, function() {
+          callback();
         }, true);
       }
       else {
@@ -27,8 +25,16 @@
     },
 
     constructContainer: function() {
-      var container = document.createElement('div');
+      var container = document.createElement('div'),
+          closeIcon = document.createElement('i'),
+          anchor = document.createElement('a');
       container.setAttribute('id', emBookmarklet.containerID);
+      anchor.setAttribute('id', emBookmarklet.closeIconId);
+      anchor.setAttribute('href', '#');
+      closeIcon.className = ('fa fa-times');
+      anchor.appendChild(closeIcon);
+      container.appendChild(anchor);
+      emBookmarklet.addListeners(anchor, 'click', emBookmarklet.deleteElements);
       return container;
     },
 
@@ -38,6 +44,20 @@
       display.appendChild(emBookmarklet.constructSpans(emBookmarklet.emid));
       display.appendChild(emBookmarklet.constructSpans(emBookmarklet.pxid));
       return display;
+    },
+
+    constructFaStyles: function() {
+      //fa_styles = '<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">';
+      var styles = document.createElement('link'),
+          attributes = [
+            ['rel', 'stylesheet'],
+            ['href', '//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css'],
+            ['id', emBookmarklet.faStylesheetId]
+          ];
+      attributes.forEach(function(element) {
+        styles.setAttribute(element[0], element[1]);
+      });
+      return styles;
     },
 
     constructSpans: function(id) {
@@ -52,7 +72,8 @@
             ['rel', 'stylesheet'],
             ['href', emBookmarklet.cssUrl],
             ['type', 'text/css'],
-            ['media', 'screen']
+            ['media', 'screen'],
+            ['id', emBookmarklet.stylesheetId]
           ];
       attributes.forEach(function(element) {
         styles.setAttribute(element[0], element[1]);
@@ -63,10 +84,12 @@
     createPanel: function() {
       var container = emBookmarklet.constructContainer(),
           display = emBookmarklet.constructDisplay(),
-          styles = emBookmarklet.constructStyles();
+          styles = emBookmarklet.constructStyles(),
+          fa_styles = emBookmarklet.constructFaStyles();
       container.appendChild(display);
       document.body.appendChild(container);
       document.body.appendChild(styles);
+      document.body.appendChild(fa_styles);
     },
 
     createYardstick: function() {
@@ -83,6 +106,18 @@
         div.style[element[0]] = element[1];
       });
       document.body.appendChild(div);
+    },
+
+    deleteElements: function() {
+      var bookmarkletElements = [
+        document.getElementById(emBookmarklet.containerID),
+        document.getElementById(emBookmarklet.yardstickID),
+        document.getElementById(emBookmarklet.stylesheetId),
+        document.getElementById(emBookmarklet.faStylesheetId)
+      ];
+      bookmarkletElements.forEach(function(element) {
+        document.body.removeChild(element);
+      });
     },
 
     getWidthEms: function() {
@@ -107,10 +142,11 @@
     },
 
     init: function() {
+      var closeButton = document.getElementById(emBookmarklet.closeIconId);
       emBookmarklet.createYardstick();
       emBookmarklet.createPanel();
       emBookmarklet.updateMeasurements();
-      emBookmarklet.addListeners();
+      emBookmarklet.addListeners(window, 'resize', emBookmarklet.updateMeasurements);
     },
 
     setEmDisplay: function(number) {

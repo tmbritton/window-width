@@ -1,0 +1,13 @@
+{
+  "name": "codeDemo",
+  "version": "0.0.1",
+  "description": "Yeoman generator for a very basic code demo.",
+  "repository": "https://github.com/tmbritton/code_demo_yo_generator.git",
+  "devDependencies": {
+    "grunt": "^0.4.5"
+  },
+  "dependencies": {
+    "grunt": "^0.4.5",
+    "grunt-http-server": "0.0.5"
+  }
+}
