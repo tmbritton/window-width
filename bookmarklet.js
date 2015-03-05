@@ -39,6 +39,7 @@
       container.setAttribute('id', emBookmarklet.containerID);
       anchor.setAttribute('id', emBookmarklet.closeIconId);
       anchor.setAttribute('href', '#');
+      anchor.setAttribute('title', 'Close');
       closeIcon.className = ('fa fa-times');
       anchor.appendChild(closeIcon);
       container.appendChild(anchor);
