@@ -43,11 +43,13 @@
   right: -8px;
   color: #e6e6e6;
   background: #a2a2a2;
-  border-radius: 50px;
-  font-size: 10px;
+  border-radius: 50%;
+  font-size: 11px;
   width: 15px;
   height: 15px;
-  padding: 1px 0 0 0;
+  padding: 0;
+  margin: 0;
+  line-height: 1.7;
   text-align: center;
 }
 
