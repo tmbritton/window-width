@@ -36,3 +36,23 @@
   left: -9999px;
   display: inline;
 }
+
+#tmbritton-embookmarklet-close {
+  position:absolute;
+  top: -8px;
+  right: -8px;
+  color: #e6e6e6;
+  background: #a2a2a2;
+  border-radius: 50%;
+  font-size: 11px;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  margin: 0;
+  line-height: 1.7;
+  text-align: center;
+}
+
+#tmbritton-embookmarklet-close:hover {
+  background: #e89790;
+}
