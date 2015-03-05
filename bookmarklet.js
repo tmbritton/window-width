@@ -192,7 +192,6 @@
      *  Kick it off
      */
     init: function() {
-      var closeButton = document.getElementById(emBookmarklet.closeIconId);
       emBookmarklet.createYardstick();
       emBookmarklet.createPanel();
       emBookmarklet.updateMeasurements();
