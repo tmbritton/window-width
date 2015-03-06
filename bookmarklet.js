@@ -69,6 +69,9 @@
       return dom_element;
     },
 
+    /**
+     *  Loop over object and create HTML DOM elements.
+     */
     createElements: function() {
       var elements = {
         mainCSS: {
