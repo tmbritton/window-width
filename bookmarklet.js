@@ -19,128 +19,151 @@
      *  Attach event listeners.
      */
     addListeners: function(element, listener, callback) {
-      if(element.addEventListener) {
+      if (typeof element == 'string') {
+        element = document.getElementById(element);
+      } 
+      if (element.addEventListener) {
         element.addEventListener(listener, function() {
           callback();
         }, true);
       }
       else {
-        console.log('This browser does not support Javascript event binding');
+        console.log('This browser does not support Javascript event binding.');
       }
     },
 
     /**
-     *  Create container for width value display.
+     *  Build string to use in style CSS attribute.
+     *  @param object object
+     *  @return string
      */
-    constructContainer: function() {
-      var container = document.createElement('div'),
-          closeIcon = document.createElement('i'),
-          anchor = document.createElement('a');
-      container.setAttribute('id', emBookmarklet.containerID);
-      anchor.setAttribute('id', emBookmarklet.closeIconId);
-      anchor.setAttribute('href', '#');
-      anchor.setAttribute('title', 'Close');
-      closeIcon.className = ('fa fa-times');
-      anchor.appendChild(closeIcon);
-      container.appendChild(anchor);
-      emBookmarklet.addListeners(anchor, 'click', emBookmarklet.deleteElements);
-      return container;
+    buildAttributesFromObject: function(object) {
+      var out = '';
+      for (var key in object) {
+        if (object.hasOwnProperty(key)) {
+          out += key +':' + object[key] + '; ';
+        }
+      }
+      return out.trim();
     },
 
     /**
-     *  Create <p> to hold values.
+     *  Build DOM elements from element name and attributes.
+     *  @param string element
+     *    Name of HTML element to build.
+     *  @param object attributes
+     *    HTML element attributes in key => value pairs.
      */
-    constructDisplay: function() {
-      var display = document.createElement('p');
-      display.setAttribute('id', emBookmarklet.displayID);
-      display.appendChild(emBookmarklet.constructSpans(emBookmarklet.emid));
-      display.appendChild(emBookmarklet.constructSpans(emBookmarklet.pxid));
-      return display;
+    buildElement: function(element, attributes) {
+      var dom_element = document.createElement(element);
+      for (var attribute in attributes) {
+        if (attributes.hasOwnProperty(attribute)) {
+          if (typeof attributes[attribute] !== 'object') {
+            dom_element.setAttribute(attribute, attributes[attribute]);
+          }
+          else {
+            dom_element.setAttribute(attribute, emBookmarklet.buildAttributesFromObject(attributes[attribute]));
+          }
+        }
+      }
+      return dom_element;
     },
 
-    /**
-     *  Create Font Awesome CSS <link> tag.
-     *  @return object
-     *    <link> dom element
-     */
-    constructFaStyles: function() {
-      var styles = document.createElement('link'),
-          attributes = [
-            ['rel', 'stylesheet'],
-            ['href', '//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css'],
-            ['id', emBookmarklet.faStylesheetId]
-          ];
-      attributes.forEach(function(element) {
-        styles.setAttribute(element[0], element[1]);
-      });
-      return styles;
-    },
+    createElements: function() {
+      var elements = {
+        mainCSS: {
+          type: 'link',
+          attributes: {
+            rel: 'stylesheet',
+            href: emBookmarklet.cssUrl,
+            type: 'text/css',
+            media: 'screen',
+            id: emBookmarklet.stylesheetId
+          },
+          parentElement: document.body
+        },
+        faCSS: {
+          type: 'link',
+          attributes: {
+            rel: 'stylesheet',
+            href: '//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css',
+            id: emBookmarklet.faStylesheetId
+          },
+          parentElement: document.body
+        },
+        yardstick: {
+          type: 'div',
+          attributes: {
+            id: emBookmarklet.yardstickID,
+            style: {
+              width: '1em',
+              height: '1em',
+              display: 'inline',
+              position: 'absolute',
+              left: '-9999px'
+            }
+          },
+          parentElement: document.body
+        },
+        container: {
+          type: 'div',
+          attributes: {
+            id: emBookmarklet.containerID
+          },
+          parentElement: document.body
+        },
+        anchor: {
+          type: 'a',
+          attributes: {
+            id: emBookmarklet.closeIconId,
+            href: '#',
+            title: 'Close'
+          },
+          parentElement: emBookmarklet.containerID
+        },
+        icon: {
+          type: 'i',
+          attributes: {
+            class: 'fa fa-times'
+          },
+          parentElement: emBookmarklet.closeIconId
+        },
+        display: {
+          type: 'p',
+          attributes: {
+            id: emBookmarklet.displayID
+          },
+          parentElement: emBookmarklet.containerID
+        },
+        emspan: {
+          type: 'span',
+          attributes: {
+            id: emBookmarklet.emid
+          },
+          parentElement: emBookmarklet.displayID
+        },
+        pxspan: {
+          type: 'span',
+          attributes: {
+            id: emBookmarklet.pxid
+          },
+          parentElement: emBookmarklet.displayID
+        }
+      };
 
-    /**
-     *  Create <span> elements that are targets for the width values.
-     *  @param string id
-     *    id attribute for the span.
-     *  @return object
-     *    <span> dom element
-     */
-    constructSpans: function(id) {
-      var span = document.createElement('span');
-      span.setAttribute('id', id);
-      return span;
-    },
-
-    /**
-     *  Create bookmarklet CSS <link> element.
-     *  @return object
-     *    <link> dom element.
-     */
-    constructStyles: function() {
-      var styles = document.createElement('link'),
-          attributes = [
-            ['rel', 'stylesheet'],
-            ['href', emBookmarklet.cssUrl],
-            ['type', 'text/css'],
-            ['media', 'screen'],
-            ['id', emBookmarklet.stylesheetId]
-          ];
-      attributes.forEach(function(element) {
-        styles.setAttribute(element[0], element[1]);
-      });
-      return styles;
-    },
-
-    /**
-     *  Add display of values to DOM.
-     */
-    createPanel: function() {
-      var container = emBookmarklet.constructContainer(),
-          display = emBookmarklet.constructDisplay(),
-          styles = emBookmarklet.constructStyles(),
-          fa_styles = emBookmarklet.constructFaStyles();
-      container.appendChild(display);
-      document.body.appendChild(container);
-      document.body.appendChild(styles);
-      document.body.appendChild(fa_styles);
-    },
-
-    /**
-     *  Add 1em x 1em div to the DOM. Inline styles so that there's not a time when there element
-     *  is present before the stylesheet loads. This lead to incorrect values.
-     */
-    createYardstick: function() {
-      var div = document.createElement('div'),
-          styles = [
-            ['width', '1em'],
-            ['height', '1em'],
-            ['display', 'inline'],
-            ['position', 'absolute'],
-            ['left', '-9999px']
-          ];
-      div.setAttribute('id', emBookmarklet.yardstickID);
-      styles.forEach(function(element) {
-        div.style[element[0]] = element[1];
-      });
-      document.body.appendChild(div);
+      for (var element in elements) {
+        if (elements.hasOwnProperty(element)) {
+          var parent = '',
+              DOMelement = emBookmarklet.buildElement(elements[element].type, elements[element].attributes);
+          if (elements[element].parentElement == document.body) {
+            elements[element].parentElement.appendChild(DOMelement);
+          }
+          else {
+            parent = document.getElementById(elements[element].parentElement);
+            parent.appendChild(DOMelement);
+          }
+        }
+      }
     },
 
     /**
@@ -193,10 +216,10 @@
      *  Kick it off
      */
     init: function() {
-      emBookmarklet.createYardstick();
-      emBookmarklet.createPanel();
+      emBookmarklet.createElements();
       emBookmarklet.updateMeasurements();
       emBookmarklet.addListeners(window, 'resize', emBookmarklet.updateMeasurements);
+      emBookmarklet.addListeners(emBookmarklet.closeIconId, 'click', emBookmarklet.deleteElements);
     },
 
     /**
