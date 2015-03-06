@@ -29,18 +29,53 @@
       }
     },
 
+    buildAttributesFromObject: function(object) {
+      var out = '';
+      for (var key in object) {
+        out += key +':' + object[key] + '; ';
+      }
+      return out.trim();
+    },
+
+    /**
+     *  Build DOM elements from element name and attributes.
+     *  @param string element
+     *    Name of HTML element to build.
+     *  @param object attributes
+     *    HTML element attributes in key => value pairs.
+     */
+    buildElement: function(element, attributes) {
+      var dom_element = document.createElement(element);
+      for (var attribute in attributes) {
+        if (typeof attributes[attribute] !== 'object') {
+          dom_element.setAttribute(attribute, attributes[attribute]);
+        }
+        else {
+          dom_element.setAttribute(attribute, emBookmarklet.buildAttributesFromObject(attributes[attribute]));
+        }
+      }
+      return dom_element;
+    },
+
     /**
      *  Create container for width value display.
      */
     constructContainer: function() {
-      var container = document.createElement('div'),
-          closeIcon = document.createElement('i'),
-          anchor = document.createElement('a');
-      container.setAttribute('id', emBookmarklet.containerID);
-      anchor.setAttribute('id', emBookmarklet.closeIconId);
-      anchor.setAttribute('href', '#');
-      anchor.setAttribute('title', 'Close');
-      closeIcon.className = ('fa fa-times');
+      var containerAttributes = {
+            id: emBookmarklet.containerID,
+          },
+          anchorAttributes = {
+            id: emBookmarklet.closeIconId,
+            href: '#',
+            title: 'Close'
+          },
+          iconAttributes = {
+            class: 'fa fa-times',
+          },
+          container = emBookmarklet.buildElement('div', containerAttributes),
+          closeIcon = emBookmarklet.buildElement('i', iconAttributes),
+          anchor = emBookmarklet.buildElement('a', anchorAttributes);
+
       anchor.appendChild(closeIcon);
       container.appendChild(anchor);
       emBookmarklet.addListeners(anchor, 'click', emBookmarklet.deleteElements);
@@ -51,42 +86,23 @@
      *  Create <p> to hold values.
      */
     constructDisplay: function() {
-      var display = document.createElement('p');
-      display.setAttribute('id', emBookmarklet.displayID);
-      display.appendChild(emBookmarklet.constructSpans(emBookmarklet.emid));
-      display.appendChild(emBookmarklet.constructSpans(emBookmarklet.pxid));
+      var displayAttributes = {
+            id: emBookmarklet.displayID,
+          },
+          emSpanAttributes = {
+            id: emBookmarklet.emid,
+          },
+          pxSpanAttributes = {
+            id: emBookmarklet.pxid,
+          },
+          display = emBookmarklet.buildElement('p', displayAttributes),
+          emSpan = emBookmarklet.buildElement('span', emSpanAttributes),
+          pxSpan = emBookmarklet.buildElement('span', pxSpanAttributes);
+
+      display.appendChild(emSpan);
+      display.appendChild(pxSpan);
+
       return display;
-    },
-
-    /**
-     *  Create Font Awesome CSS <link> tag.
-     *  @return object
-     *    <link> dom element
-     */
-    constructFaStyles: function() {
-      var styles = document.createElement('link'),
-          attributes = [
-            ['rel', 'stylesheet'],
-            ['href', '//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css'],
-            ['id', emBookmarklet.faStylesheetId]
-          ];
-      attributes.forEach(function(element) {
-        styles.setAttribute(element[0], element[1]);
-      });
-      return styles;
-    },
-
-    /**
-     *  Create <span> elements that are targets for the width values.
-     *  @param string id
-     *    id attribute for the span.
-     *  @return object
-     *    <span> dom element
-     */
-    constructSpans: function(id) {
-      var span = document.createElement('span');
-      span.setAttribute('id', id);
-      return span;
     },
 
     /**
@@ -95,18 +111,23 @@
      *    <link> dom element.
      */
     constructStyles: function() {
-      var styles = document.createElement('link'),
-          attributes = [
-            ['rel', 'stylesheet'],
-            ['href', emBookmarklet.cssUrl],
-            ['type', 'text/css'],
-            ['media', 'screen'],
-            ['id', emBookmarklet.stylesheetId]
-          ];
-      attributes.forEach(function(element) {
-        styles.setAttribute(element[0], element[1]);
-      });
-      return styles;
+      var styleAttributes = {
+            rel: 'stylesheet',
+            href: emBookmarklet.cssUrl,
+            type: 'text/css',
+            media: 'screen',
+            id: emBookmarklet.stylesheetId
+          },
+          faStyleAttributes = {
+            rel: 'stylesheet',
+            href: '//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css',
+            id: emBookmarklet.faStylesheetId
+          },
+          styles = emBookmarklet.buildElement('link', styleAttributes),
+          faStyles = emBookmarklet.buildElement('link', faStyleAttributes);
+
+      document.body.appendChild(styles);
+      document.body.appendChild(faStyles);
     },
 
     /**
@@ -114,13 +135,10 @@
      */
     createPanel: function() {
       var container = emBookmarklet.constructContainer(),
-          display = emBookmarklet.constructDisplay(),
-          styles = emBookmarklet.constructStyles(),
-          fa_styles = emBookmarklet.constructFaStyles();
+          display = emBookmarklet.constructDisplay();
       container.appendChild(display);
       document.body.appendChild(container);
-      document.body.appendChild(styles);
-      document.body.appendChild(fa_styles);
+      emBookmarklet.constructStyles();
     },
 
     /**
@@ -128,19 +146,19 @@
      *  is present before the stylesheet loads. This lead to incorrect values.
      */
     createYardstick: function() {
-      var div = document.createElement('div'),
-          styles = [
-            ['width', '1em'],
-            ['height', '1em'],
-            ['display', 'inline'],
-            ['position', 'absolute'],
-            ['left', '-9999px']
-          ];
-      div.setAttribute('id', emBookmarklet.yardstickID);
-      styles.forEach(function(element) {
-        div.style[element[0]] = element[1];
-      });
-      document.body.appendChild(div);
+      var attributes = {
+            id: emBookmarklet.yardstickID,
+            style: {
+              width: '1em',
+              height: '1em',
+              display: 'inline',
+              position: 'absolute',
+              left: '-9999px'
+            }
+          },
+          yardstick = emBookmarklet.buildElement('div', attributes);
+
+      document.body.appendChild(yardstick);
     },
 
     /**
