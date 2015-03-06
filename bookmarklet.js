@@ -19,20 +19,30 @@
      *  Attach event listeners.
      */
     addListeners: function(element, listener, callback) {
-      if(element.addEventListener) {
+      if (typeof element == 'string') {
+        element = document.getElementById(element);
+      } 
+      if (element.addEventListener) {
         element.addEventListener(listener, function() {
           callback();
         }, true);
       }
       else {
-        console.log('This browser does not support Javascript event binding');
+        console.log('This browser does not support Javascript event binding.');
       }
     },
 
+    /**
+     *  Build string to use in style CSS attribute.
+     *  @param object object
+     *  @return string
+     */
     buildAttributesFromObject: function(object) {
       var out = '';
       for (var key in object) {
-        out += key +':' + object[key] + '; ';
+        if (object.hasOwnProperty(key)) {
+          out += key +':' + object[key] + '; ';
+        }
       }
       return out.trim();
     },
@@ -47,106 +57,43 @@
     buildElement: function(element, attributes) {
       var dom_element = document.createElement(element);
       for (var attribute in attributes) {
-        if (typeof attributes[attribute] !== 'object') {
-          dom_element.setAttribute(attribute, attributes[attribute]);
-        }
-        else {
-          dom_element.setAttribute(attribute, emBookmarklet.buildAttributesFromObject(attributes[attribute]));
+        if (attributes.hasOwnProperty(attribute)) {
+          if (typeof attributes[attribute] !== 'object') {
+            dom_element.setAttribute(attribute, attributes[attribute]);
+          }
+          else {
+            dom_element.setAttribute(attribute, emBookmarklet.buildAttributesFromObject(attributes[attribute]));
+          }
         }
       }
       return dom_element;
     },
 
-    /**
-     *  Create container for width value display.
-     */
-    constructContainer: function() {
-      var containerAttributes = {
-            id: emBookmarklet.containerID,
-          },
-          anchorAttributes = {
-            id: emBookmarklet.closeIconId,
-            href: '#',
-            title: 'Close'
-          },
-          iconAttributes = {
-            class: 'fa fa-times',
-          },
-          container = emBookmarklet.buildElement('div', containerAttributes),
-          closeIcon = emBookmarklet.buildElement('i', iconAttributes),
-          anchor = emBookmarklet.buildElement('a', anchorAttributes);
-
-      anchor.appendChild(closeIcon);
-      container.appendChild(anchor);
-      emBookmarklet.addListeners(anchor, 'click', emBookmarklet.deleteElements);
-      return container;
-    },
-
-    /**
-     *  Create <p> to hold values.
-     */
-    constructDisplay: function() {
-      var displayAttributes = {
-            id: emBookmarklet.displayID,
-          },
-          emSpanAttributes = {
-            id: emBookmarklet.emid,
-          },
-          pxSpanAttributes = {
-            id: emBookmarklet.pxid,
-          },
-          display = emBookmarklet.buildElement('p', displayAttributes),
-          emSpan = emBookmarklet.buildElement('span', emSpanAttributes),
-          pxSpan = emBookmarklet.buildElement('span', pxSpanAttributes);
-
-      display.appendChild(emSpan);
-      display.appendChild(pxSpan);
-
-      return display;
-    },
-
-    /**
-     *  Create bookmarklet CSS <link> element.
-     *  @return object
-     *    <link> dom element.
-     */
-    constructStyles: function() {
-      var styleAttributes = {
+    createElements: function() {
+      var elements = {
+        mainCSS: {
+          type: 'link',
+          attributes: {
             rel: 'stylesheet',
             href: emBookmarklet.cssUrl,
             type: 'text/css',
             media: 'screen',
             id: emBookmarklet.stylesheetId
           },
-          faStyleAttributes = {
+          parentElement: document.body
+        },
+        faCSS: {
+          type: 'link',
+          attributes: {
             rel: 'stylesheet',
             href: '//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css',
             id: emBookmarklet.faStylesheetId
           },
-          styles = emBookmarklet.buildElement('link', styleAttributes),
-          faStyles = emBookmarklet.buildElement('link', faStyleAttributes);
-
-      document.body.appendChild(styles);
-      document.body.appendChild(faStyles);
-    },
-
-    /**
-     *  Add display of values to DOM.
-     */
-    createPanel: function() {
-      var container = emBookmarklet.constructContainer(),
-          display = emBookmarklet.constructDisplay();
-      container.appendChild(display);
-      document.body.appendChild(container);
-      emBookmarklet.constructStyles();
-    },
-
-    /**
-     *  Add 1em x 1em div to the DOM. Inline styles so that there's not a time when there element
-     *  is present before the stylesheet loads. This lead to incorrect values.
-     */
-    createYardstick: function() {
-      var attributes = {
+          parentElement: document.body
+        },
+        yardstick: {
+          type: 'div',
+          attributes: {
             id: emBookmarklet.yardstickID,
             style: {
               width: '1em',
@@ -156,9 +103,67 @@
               left: '-9999px'
             }
           },
-          yardstick = emBookmarklet.buildElement('div', attributes);
+          parentElement: document.body
+        },
+        container: {
+          type: 'div',
+          attributes: {
+            id: emBookmarklet.containerID
+          },
+          parentElement: document.body
+        },
+        anchor: {
+          type: 'a',
+          attributes: {
+            id: emBookmarklet.closeIconId,
+            href: '#',
+            title: 'Close'
+          },
+          parentElement: emBookmarklet.containerID
+        },
+        icon: {
+          type: 'i',
+          attributes: {
+            class: 'fa fa-times'
+          },
+          parentElement: emBookmarklet.closeIconId
+        },
+        display: {
+          type: 'p',
+          attributes: {
+            id: emBookmarklet.displayID
+          },
+          parentElement: emBookmarklet.containerID
+        },
+        emspan: {
+          type: 'span',
+          attributes: {
+            id: emBookmarklet.emid
+          },
+          parentElement: emBookmarklet.displayID
+        },
+        pxspan: {
+          type: 'span',
+          attributes: {
+            id: emBookmarklet.pxid
+          },
+          parentElement: emBookmarklet.displayID
+        }
+      };
 
-      document.body.appendChild(yardstick);
+      for (var element in elements) {
+        if (elements.hasOwnProperty(element)) {
+          var parent = '',
+              DOMelement = emBookmarklet.buildElement(elements[element].type, elements[element].attributes);
+          if (elements[element].parentElement == document.body) {
+            elements[element].parentElement.appendChild(DOMelement);
+          }
+          else {
+            parent = document.getElementById(elements[element].parentElement);
+            parent.appendChild(DOMelement);
+          }
+        }
+      }
     },
 
     /**
@@ -211,10 +216,10 @@
      *  Kick it off
      */
     init: function() {
-      emBookmarklet.createYardstick();
-      emBookmarklet.createPanel();
+      emBookmarklet.createElements();
       emBookmarklet.updateMeasurements();
       emBookmarklet.addListeners(window, 'resize', emBookmarklet.updateMeasurements);
+      emBookmarklet.addListeners(emBookmarklet.closeIconId, 'click', emBookmarklet.deleteElements);
     },
 
     /**
